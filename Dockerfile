@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY server/ ./server/
 COPY models.py .
 COPY openenv.yaml .
-COPY client.py .
+COPY inference.py .
 COPY train.py .
 
 EXPOSE 7860
