@@ -1,10 +1,11 @@
 ---
-title: Customer Support Ticket Prioritization RL
+title: Ticket Prioritization RL
 emoji: 🎫
 colorFrom: blue
 colorTo: indigo
 sdk: docker
 app_file: server/app.py
+app_port: 7860
 pinned: false
 ---
 
