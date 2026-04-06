@@ -1,0 +1,16 @@
+name: customer-support-ticket-prioritization
+version: 1.0.0
+description: RL environment for prioritizing customer support tickets with DQN.
+tasks:
+  - id: easy
+    description: Low/medium priority, no deadlines.
+    grader: server.tasks.EasyTask
+  - id: medium
+    description: Mixed priorities and SLA deadlines.
+    grader: server.tasks.MediumTask
+  - id: hard
+    description: High priority long tickets vs many quick medium tickets.
+    grader: server.tasks.HardTask
+observation_model: models.Observation
+action_model: models.Action
+reward_model: models.Reward
