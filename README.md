@@ -107,3 +107,47 @@ pip install -r server/requirements.txt
 
 # Start the FastAPI server
 uvicorn server.app:app --reload --port 7860
+
+```
+
+### 2. Run the Baseline Inference Script
+
+The baseline uses GPT‑3.5‑turbo (or any OpenAI‑compatible model) to choose actions. Set the required environment variables:
+
+```bash
+export HF_TOKEN="your-openai-api-key-or-hf-token"
+export API_BASE_URL="https://api.openai.com/v1"   # optional
+export MODEL_NAME="gpt-3.5-turbo"                 # optional
+export OPENENV_API_URL="http://127.0.0.1:7860"    # point to running server
+
+
+python inference.py
+```
+
+You will see output in the required format:
+
+```text
+[START] task=customer-support-ticket-prioritization env=OpenEnv model=gpt-3.5-turbo
+[STEP] step=1 action=2 reward=1.23 done=false error=None
+[STEP] step=2 action=0 reward=4.56 done=false error=None
+...
+[END] success=false steps=50 rewards=1.23,4.56,...
+```
+
+
+
+### 3. Train Your Own DQN Agent (Optional)
+```bash
+python train.py
+```
+Training metrics (training_metrics.png) and the trained model (dqn_model.pth) will be saved.
+
+### 4. Run with Docker
+```bash
+docker build -f server/Dockerfile -t ticket-env .
+docker run -p 7860:7860 ticket-env
+```
+
+Then repeat step 2 (pointing OPENENV_API_URL to http://localhost:7860)
+
+---
