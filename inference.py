@@ -4,12 +4,9 @@ import asyncio
 import httpx
 from openai import AsyncOpenAI
 
-# ---------- Environment variables (per Guidelines) ----------
-# LLM endpoint (must have default)
+# ---------- Environment variables  ----------
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
-# Model name (must have default)
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-3.5-turbo")
-# Hugging Face token (mandatory)
 HF_TOKEN = os.getenv("HF_TOKEN")
 if not HF_TOKEN:
     raise ValueError("HF_TOKEN environment variable is required")
