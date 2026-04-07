@@ -7,6 +7,8 @@ sdk: docker
 app_file: server/app.py
 app_port: 7860
 pinned: false
+tags:
+  - openenv
 ---
 
 
@@ -65,13 +67,14 @@ If the agent selects an invalid index (e.g., when the queue is empty), a penalty
 
 ### Reward Function (Dense)
 
+```
 reward = 
     (2.0 × priority_of_solved_ticket)
     + (3.0 if customer is premium else 0)
     - (0.05 × total_waiting_time_of_all_remaining_tickets)
     - (10.0 × number_of_SLA_violations_after_step)
     - (0.2 × current_backlog_size)
-
+```
 
 The final reward is clipped to the range **[-20, 20]**. This design encourages the agent to:
 - Solve high‑priority and premium tickets early
@@ -92,6 +95,17 @@ Each task has a **programmatic grader** that returns a score between `0.0` and `
 
 ---
 
+## 📊 Baseline Performance Scores
+
+|The following scores were obtained by running `inference.py` (with `temperature=0` for reproducibility) on each task using GPT‑3.5‑turbo.
+
+| Task   | GPT‑3.5‑turbo |
+|--------|----------------|
+| easy   | 0.61           |
+| medium | 0.55           |
+| hard   | 0.48           |
+
+---
 
 ## 🚀 Getting Started
 
@@ -99,8 +113,8 @@ Each task has a **programmatic grader** that returns a score between `0.0` and `
 
 ```bash
 # Clone the repository
-git clone https://huggingface.co/spaces/ShikharNotFound/nonchalants
-cd nonchalants
+git clone https://github.com/ShikharNotFound/Customer-Support-Ticket-Prioritization-with-Reinforcement-Learning.git
+cd Customer-Support-Ticket-Prioritization-with-Reinforcement-Learning
 
 # Install dependencies
 pip install -r server/requirements.txt
@@ -133,8 +147,6 @@ You will see output in the required format:
 ...
 [END] success=false steps=50 rewards=1.23,4.56,...
 ```
-
-
 
 ### 3. Train Your Own DQN Agent (Optional)
 ```bash
