@@ -14,7 +14,7 @@ task_graders = {
 }
 current_trajectory = []
 
-# ---------- HTML root page (updated for OpenAI inference) ----------
+# ---------- HTML root page (matches OpenAI inference system) ----------
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -29,7 +29,7 @@ HTML_PAGE = """
         .reward { font-weight: bold; color: green; }
         .done { color: red; }
         pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
-        .badge { background: #10a37f; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; display: inline-block; }
+        .badge { background: #10a37f; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-right: 8px; }
     </style>
 </head>
 <body>
@@ -55,11 +55,11 @@ HTML_PAGE = """
     </div>
     <hr>
     <p>
-        <span class="badge">OpenAI Powered</span> 
-        <a href="/download-inference" download="inference.py">⬇️ Download inference.py (GPT‑3.5/4 agent)</a> – runs the full benchmark.
+        <span class="badge">🤖 OpenAI Powered</span>
+        <a href="/download-inference" download="inference.py">⬇️ Download inference.py (OpenAI GPT‑powered agent)</a>
     </p>
-    <p><small>📌 Requires <code>OPENAI_API_KEY</code> or <code>HF_TOKEN</code> set as environment variable.</small></p>
-    <pre>API_BASE_URL = window.location.origin</pre>
+    <p><small>📌 To run the full benchmark: set <code>HF_TOKEN</code> (or <code>OPENAI_API_KEY</code>) and optionally <code>API_BASE_URL</code>, <code>MODEL_NAME</code>.</small></p>
+    <pre>OPENENV_API_URL = window.location.origin   # point inference.py to this Space</pre>
     <script>
         let cumulative = 0.0;
         let currentObs = null;
