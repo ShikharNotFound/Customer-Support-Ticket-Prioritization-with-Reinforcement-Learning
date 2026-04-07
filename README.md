@@ -120,8 +120,8 @@ export API_BASE_URL="https://api.openai.com/v1"   # optional
 export MODEL_NAME="gpt-3.5-turbo"                 # optional
 export OPENENV_API_URL="http://127.0.0.1:7860"    # point to running server
 
-
 python inference.py
+
 ```
 
 You will see output in the required format:
