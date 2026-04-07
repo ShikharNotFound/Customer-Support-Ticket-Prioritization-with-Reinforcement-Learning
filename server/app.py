@@ -53,7 +53,7 @@ HTML_PAGE = """
         <p><strong>Cumulative Reward (this session):</strong> <span id="cumulativeReward">0.00</span></p>
     </div>
     <hr>
-    <p><a href="/download-client" download="inference.py">⬇️ Download inference.py (heuristic agent)</a> – run locally to see full logs.</p>
+    <p><a href="/download-inference" download="inference.py">⬇️ Download inference.py (heuristic agent)</a> – run locally to see full logs.</p>
     <pre>API_BASE_URL = window.location.origin</pre>
     <script>
         let cumulative = 0.0;
@@ -142,16 +142,16 @@ HTML_PAGE = """
 async def root():
     return HTML_PAGE
 
-@app.get("/download-client")
-async def download_client():
+@app.get("/download-inference")
+async def download_inference():
     from fastapi.responses import FileResponse
     import os
-    # Path to client.py (should be in the root of the container)
-    client_path = "/app/client.py"
-    if os.path.exists(client_path):
-        return FileResponse(client_path, media_type="text/plain", filename="client.py")
+    # Path to inference.py (should be in the root of the container)
+    inference_path = "/app/inference.py"
+    if os.path.exists(inference_path):
+        return FileResponse(inference_path, media_type="text/plain", filename="inference.py")
     else:
-        return HTMLResponse("client.py not found. Please ensure it is present in the container.", status_code=404)
+        return HTMLResponse("inference.py not found. Please ensure it is present in the container.", status_code=404)
 
 # ---------- OpenEnv endpoints ----------
 @app.api_route("/reset", methods=["GET", "POST"])
