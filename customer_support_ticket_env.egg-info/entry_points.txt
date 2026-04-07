@@ -1,2 +1,2 @@
 [console_scripts]
-ticket-env-server = server.app:main
+server = server.app:main

@@ -22,4 +22,4 @@ dependencies = [
 ]
 
 [project.scripts]
-ticket-env-server = "server.app:main"
+server = "server.app:main"
