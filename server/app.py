@@ -14,7 +14,7 @@ task_graders = {
 }
 current_trajectory = []
 
-# ---------- HTML root page for human visitors ----------
+# ---------- HTML root page (updated for OpenAI inference) ----------
 HTML_PAGE = """
 <!DOCTYPE html>
 <html>
@@ -29,6 +29,7 @@ HTML_PAGE = """
         .reward { font-weight: bold; color: green; }
         .done { color: red; }
         pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .badge { background: #10a37f; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -53,7 +54,11 @@ HTML_PAGE = """
         <p><strong>Cumulative Reward (this session):</strong> <span id="cumulativeReward">0.00</span></p>
     </div>
     <hr>
-    <p><a href="/download-inference" download="inference.py">⬇️ Download inference.py (heuristic agent)</a> – run locally to see full logs.</p>
+    <p>
+        <span class="badge">OpenAI Powered</span> 
+        <a href="/download-inference" download="inference.py">⬇️ Download inference.py (GPT‑3.5/4 agent)</a> – runs the full benchmark.
+    </p>
+    <p><small>📌 Requires <code>OPENAI_API_KEY</code> or <code>HF_TOKEN</code> set as environment variable.</small></p>
     <pre>API_BASE_URL = window.location.origin</pre>
     <script>
         let cumulative = 0.0;
@@ -135,7 +140,6 @@ HTML_PAGE = """
     </script>
 </body>
 </html>
-
 """
 
 @app.get("/", response_class=HTMLResponse)
@@ -146,7 +150,6 @@ async def root():
 async def download_inference():
     from fastapi.responses import FileResponse
     import os
-    # Path to inference.py (should be in the root of the container)
     inference_path = "/app/inference.py"
     if os.path.exists(inference_path):
         return FileResponse(inference_path, media_type="text/plain", filename="inference.py")
