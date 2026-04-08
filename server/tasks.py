@@ -12,8 +12,14 @@ class TaskGrader:
 class EasyTask(TaskGrader):
     def grade(self, trajectory):
         rewards = [r for _, _, r in trajectory]
-        avg_reward = sum(rewards) / len(rewards) if rewards else 0
-        return min(1.0, max(0.0, avg_reward / 10.0))
+        if not rewards:
+            return 0.5  # fallback
+        avg_reward = sum(rewards) / len(rewards)
+        # Map average reward (typically -20..20) to (0.001, 0.999)
+        # Clamp raw score to [0,1] then shift slightly inward
+        raw = max(0.0, min(1.0, (avg_reward + 20) / 40))  # assumes range -20..20
+        # Avoid 0.0 and 1.0
+        return max(0.001, min(0.999, raw))
 
 class MediumTask(TaskGrader):
     def grade(self, trajectory):
@@ -21,13 +27,19 @@ class MediumTask(TaskGrader):
         for obs, _, _ in trajectory:
             total_violations += obs.urgent_count
         max_violations = 20
-        score = 1.0 - min(1.0, total_violations / max_violations)
-        return score
+        raw = 1.0 - min(1.0, total_violations / max_violations)
+        # Avoid 0.0 and 1.0
+        return max(0.001, min(0.999, raw))
 
 class HardTask(TaskGrader):
     def grade(self, trajectory):
         if not trajectory:
-            return 0.0
+            return 0.5
         final_backlog = trajectory[-1][0].backlog_size
-        score = 1.0 / (1.0 + final_backlog)
-        return score
+        raw = 1.0 / (1.0 + final_backlog)
+        # raw is always >0, but can be 1.0 when backlog=0
+        if raw >= 1.0:
+            return 0.999
+        if raw <= 0.0:
+            return 0.001
+        return raw
