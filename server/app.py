@@ -180,8 +180,16 @@ async def get_state():
 async def grade(task_id: str):
     if task_id not in task_graders:
         raise HTTPException(400, f"Unknown task {task_id}")
+    
+    # If no steps have been taken, return a safe middle score
+    if not current_trajectory:
+        return {"score": 0.5}
+    
     grader = task_graders[task_id]
     score = grader.grade(current_trajectory)
+    
+    # Final safety clamp – never 0.0 or 1.0
+    score = max(0.001, min(0.999, score))
     return {"score": score}
 
 @app.get("/ping")
