@@ -155,6 +155,21 @@ HTML_PAGE = """
 </body>
 </html>
 """
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    return HTML_PAGE
+
+@app.get("/download-inference")
+async def download_inference():
+    from fastapi.responses import FileResponse
+    import os
+    inference_path = "/app/inference.py"
+    if os.path.exists(inference_path):
+        return FileResponse(inference_path, media_type="text/plain", filename="inference.py")
+    else:
+        return HTMLResponse("inference.py not found. Please ensure it is present in the container.", status_code=404)
+
+
 
 
 @app.api_route("/reset", methods=["GET", "POST"])
