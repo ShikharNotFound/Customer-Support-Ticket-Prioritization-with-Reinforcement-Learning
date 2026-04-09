@@ -19,7 +19,7 @@ MAX_STEPS = 50
 MAX_TOTAL_REWARD = 200.0
 SUCCESS_SCORE_THRESHOLD = 0.5
 
-# ✅ FIX 1: Define all 3 tasks
+
 TASKS = ["easy", "medium", "hard"]
 
 
@@ -69,7 +69,7 @@ async def run_task(http: httpx.AsyncClient, task_id: str):
     done = False
     error = None
 
-    # ✅ FIX 1: Each task emits its own [START] line
+
     print(f"[START] task={TASK_NAME}-{task_id} env={BENCHMARK} model={MODEL_NAME}", flush=True)
 
     for step in range(1, MAX_STEPS + 1):
@@ -98,22 +98,22 @@ async def run_task(http: httpx.AsyncClient, task_id: str):
     total_reward = sum(rewards)
     raw_score = total_reward / MAX_TOTAL_REWARD
 
-    # ✅ FIX 3: Clamp strictly between 0 and 1 (never exactly 0.0 or 1.0)
+   
     score = max(0.001, min(0.999, raw_score))
     success = score >= SUCCESS_SCORE_THRESHOLD
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
 
-    # ✅ FIX 2: Include score= in [END] line
+  
     print(
         f"[END] success={str(success).lower()} steps={len(rewards)} "
-        f"score={score:.2f} rewards={rewards_str}",
+        f"score={score:.6f} rewards={rewards_str}",
         flush=True,
     )
 
 
 async def main():
     async with httpx.AsyncClient() as http:
-        # ✅ FIX 1: Run all 3 tasks
+    
         for task_id in TASKS:
             await run_task(http, task_id)
 
