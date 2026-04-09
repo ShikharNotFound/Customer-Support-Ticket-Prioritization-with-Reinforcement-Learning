@@ -4,6 +4,7 @@ import uuid
 from typing import List, Tuple
 from models import Ticket, Observation
 
+
 class TicketEnv:
     def __init__(self, max_tickets: int = 10, episode_steps: int = 200):
         self.max_tickets = max_tickets
@@ -13,13 +14,22 @@ class TicketEnv:
         self.step_count = 0
         self.done = False
         self.arrival_prob = 0.5
+        self.sla_pressure = False  # ✅ added
 
-    def reset(self) -> Observation:
+    def reset(self, num_tickets: int = None, sla_pressure: bool = False) -> Observation:  # ✅ added params
         self.current_time = 0.0
         self.step_count = 0
         self.done = False
         self.tickets = []
-        for _ in range(np.random.randint(3, 8)):
+
+        # ✅ Allow task-specific ticket count; fall back to constructor default
+        effective_max = num_tickets if num_tickets is not None else self.max_tickets
+        self.max_tickets = effective_max
+
+        # ✅ SLA pressure: tighter deadlines for medium/hard tasks
+        self.sla_pressure = sla_pressure
+
+        for _ in range(np.random.randint(3, min(8, effective_max + 1))):
             self._add_random_ticket()
         return self._get_observation()
 
@@ -74,7 +84,13 @@ class TicketEnv:
     def _add_random_ticket(self):
         priority = np.random.randint(1, 6)
         solve_time = np.random.uniform(1, 10)
-        sla_deadline = self.current_time + np.random.uniform(10, 30)
+
+        # ✅ Tighter SLA deadlines under pressure (medium/hard tasks)
+        if self.sla_pressure:
+            sla_deadline = self.current_time + np.random.uniform(5, 15)
+        else:
+            sla_deadline = self.current_time + np.random.uniform(10, 30)
+
         customer_value = np.random.choice([1, 2], p=[0.7, 0.3])
         ticket = Ticket(
             id=str(uuid.uuid4()),
