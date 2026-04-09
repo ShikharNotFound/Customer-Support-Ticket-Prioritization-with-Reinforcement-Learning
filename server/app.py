@@ -6,195 +6,83 @@ from .meta_env_environment import TicketEnv
 from .tasks import EasyTask, MediumTask, HardTask
 
 app = FastAPI()
-env = TicketEnv()
+
 task_graders = {
-    "easy": EasyTask("easy"),
+    "easy":   EasyTask("easy"),
     "medium": MediumTask("medium"),
-    "hard": HardTask("hard")
+    "hard":   HardTask("hard"),
 }
-current_trajectory = []
 
-# ---------- HTML root page (matches OpenAI inference system) ----------
-HTML_PAGE = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Ticket Prioritization RL Demo</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 40px auto; padding: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f2f2f2; }
-        button, select { margin: 10px 5px; padding: 8px 12px; font-size: 14px; }
-        .reward { font-weight: bold; color: green; }
-        .done { color: red; }
-        pre { background: #f4f4f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
-        .badge { background: #10a37f; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; display: inline-block; margin-right: 8px; }
-    </style>
-</head>
-<body>
-    <h1>🎫 Customer Support Ticket Prioritization RL</h1>
-    <p>Interactive demo: reset environment, choose a ticket to solve, and see the reward.</p>
-    <button id="resetBtn">🔄 Reset Environment</button>
-    <div id="status"></div>
-    <table id="ticketTable">
-        <thead>
-            <tr><th>Index</th><th>Priority</th><th>Waiting Time</th><th>Solve Time</th><th>SLA Deadline</th><th>Customer Value</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <div>
-        <label for="actionSelect">Choose ticket index to solve:</label>
-        <select id="actionSelect"></select>
-        <button id="stepBtn">⚡ Step (Solve Ticket)</button>
-    </div>
-    <div>
-        <p><strong>Last Reward:</strong> <span id="rewardValue" class="reward">—</span></p>
-        <p><strong>Episode Done:</strong> <span id="doneStatus">❌ No</span></p>
-        <p><strong>Cumulative Reward (this session):</strong> <span id="cumulativeReward">0.00</span></p>
-    </div>
-    <hr>
-    <p>
-        <span class="badge">🤖 OpenAI Powered</span>
-        <a href="/download-inference" download="inference.py">⬇️ Download inference.py (OpenAI GPT‑powered agent)</a>
-    </p>
-    <p><small>📌 To run the full benchmark: set <code>HF_TOKEN</code> (or <code>OPENAI_API_KEY</code>) and optionally <code>API_BASE_URL</code>, <code>MODEL_NAME</code>.</small></p>
-    <pre>OPENENV_API_URL = window.location.origin   # point inference.py to this Space</pre>
-    <script>
-        let cumulative = 0.0;
-        let currentObs = null;
+# ✅ FIX 2: per-task trajectory storage
+task_trajectories = {"easy": [], "medium": [], "hard": []}
+current_task_id = "easy"
 
-        async function resetEnv() {
-            const response = await fetch('/reset?task_id=easy');
-            const data = await response.json();
-            currentObs = data;
-            cumulative = 0.0;
-            document.getElementById('cumulativeReward').innerText = cumulative.toFixed(2);
-            document.getElementById('rewardValue').innerText = '—';
-            document.getElementById('doneStatus').innerHTML = '❌ No';
-            renderTickets(data.tickets);
-            updateActionSelect(data.tickets.length);
-        }
+# ✅ FIX 3: task-specific env configs
+TASK_CONFIGS = {
+    "easy":   {"num_tickets": 5,  "sla_pressure": False},
+    "medium": {"num_tickets": 10, "sla_pressure": True},
+    "hard":   {"num_tickets": 20, "sla_pressure": True},
+}
 
-        function renderTickets(tickets) {
-            const tbody = document.querySelector('#ticketTable tbody');
-            tbody.innerHTML = '';
-            tickets.forEach((t, idx) => {
-                const row = tbody.insertRow();
-                row.insertCell(0).innerText = idx;
-                row.insertCell(1).innerText = t.priority;
-                row.insertCell(2).innerText = t.waiting_time.toFixed(1);
-                row.insertCell(3).innerText = t.solve_time.toFixed(1);
-                row.insertCell(4).innerText = t.sla_deadline.toFixed(1);
-                row.insertCell(5).innerText = t.customer_value === 2 ? 'Premium' : 'Normal';
-            });
-        }
+env = TicketEnv()
 
-        function updateActionSelect(numTickets) {
-            const select = document.getElementById('actionSelect');
-            select.innerHTML = '';
-            for (let i = 0; i < numTickets; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.text = `Ticket ${i}`;
-                select.appendChild(option);
-            }
-            if (numTickets === 0) {
-                const option = document.createElement('option');
-                option.text = 'No tickets';
-                select.appendChild(option);
-            }
-        }
+# ... (keep your HTML_PAGE and root/download endpoints unchanged) ...
 
-        async function step() {
-            if (!currentObs) {
-                alert('Please reset first.');
-                return;
-            }
-            const select = document.getElementById('actionSelect');
-            const actionIdx = parseInt(select.value);
-            const response = await fetch('/step', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ticket_index: actionIdx })
-            });
-            const data = await response.json();
-            currentObs = data.observation;
-            const reward = data.reward.value;
-            const done = data.done;
-            cumulative += reward;
-            document.getElementById('rewardValue').innerHTML = reward.toFixed(2);
-            document.getElementById('cumulativeReward').innerHTML = cumulative.toFixed(2);
-            document.getElementById('doneStatus').innerHTML = done ? '✅ Yes' : '❌ No';
-            renderTickets(currentObs.tickets);
-            updateActionSelect(currentObs.tickets.length);
-            if (done) {
-                alert(`Episode finished! Final cumulative reward: ${cumulative.toFixed(2)}`);
-            }
-        }
-
-        document.getElementById('resetBtn').addEventListener('click', resetEnv);
-        document.getElementById('stepBtn').addEventListener('click', step);
-        // Initial reset on page load
-        resetEnv();
-    </script>
-</body>
-</html>
-"""
-
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    return HTML_PAGE
-
-@app.get("/download-inference")
-async def download_inference():
-    from fastapi.responses import FileResponse
-    import os
-    inference_path = "/app/inference.py"
-    if os.path.exists(inference_path):
-        return FileResponse(inference_path, media_type="text/plain", filename="inference.py")
-    else:
-        return HTMLResponse("inference.py not found. Please ensure it is present in the container.", status_code=404)
-
-# ---------- OpenEnv endpoints ----------
 @app.api_route("/reset", methods=["GET", "POST"])
 async def reset(task_id: str = Query("easy")):
-    global current_trajectory
-    obs = env.reset()
-    current_trajectory = []
+    global current_task_id
+    if task_id not in task_graders:
+        raise HTTPException(400, f"Unknown task_id: {task_id}")
+
+    current_task_id = task_id
+
+    # ✅ FIX 2: clear only THIS task's trajectory
+    task_trajectories[task_id] = []
+
+    # ✅ FIX 3: configure env difficulty based on task
+    config = TASK_CONFIGS[task_id]
+    obs = env.reset(
+        num_tickets=config["num_tickets"],
+        sla_pressure=config["sla_pressure"],
+    )
     return obs
+
 
 @app.post("/step")
 async def step(action: Action):
-    global current_trajectory
     obs, reward_val, done, info = env.step(action.ticket_index)
     reward = Reward(value=reward_val)
-    current_trajectory.append((obs, action, reward_val))
+
+    # ✅ FIX 2: append to the current task's trajectory
+    task_trajectories[current_task_id].append((obs, action, reward_val))
+
     return {"observation": obs, "reward": reward, "done": done, "info": info}
+
 
 @app.get("/state")
 async def get_state():
     return {"state_vector": env.get_state_vector().tolist()}
 
-@app.post("/grade")
-async def grade(task_id: str):
+
+# ✅ FIX 1: GET endpoint with Query param
+@app.get("/grade")
+async def grade(task_id: str = Query("easy")):
     if task_id not in task_graders:
-        raise HTTPException(400, f"Unknown task {task_id}")
-    
-    # If no steps have been taken, return a safe middle score
-    if not current_trajectory:
+        raise HTTPException(400, f"Unknown task: {task_id}")
+
+    trajectory = task_trajectories.get(task_id, [])
+    if not trajectory:
         return {"score": 0.5}
-    
-    grader = task_graders[task_id]
-    score = grader.grade(current_trajectory)
-    
-    # Final safety clamp – never 0.0 or 1.0
+
+    score = task_graders[task_id].grade(trajectory)
     score = max(0.001, min(0.999, score))
     return {"score": score}
+
 
 @app.get("/ping")
 async def ping():
     return {"status": "ok"}
+
 
 def main():
     import uvicorn
