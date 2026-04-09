@@ -73,7 +73,7 @@ HTML_PAGE = """
         <a href="/download-inference" download="inference.py">⬇️ Download inference.py (OpenAI GPT‑powered agent)</a>
     </p>
     <p><small>📌 To run the full benchmark: set <code>HF_TOKEN</code> (or <code>OPENAI_API_KEY</code>) and optionally <code>API_BASE_URL</code>, <code>MODEL_NAME</code>.</small></p>
-    <pre>OPENENV_API_URL = window.location.origin   # point inference.py to this Space</pre>
+    <pre>OPENENV_API_URL = window.location.origin  </pre>
     <script>
         let cumulative = 0.0;
         let currentObs = null;
