@@ -106,7 +106,7 @@ async def run_task(http: httpx.AsyncClient, task_id: str):
     # ✅ FIX 2: Include score= in [END] line
     print(
         f"[END] success={str(success).lower()} steps={len(rewards)} "
-        f"score={score:.3f} rewards={rewards_str}",
+        f"score={score:.2f} rewards={rewards_str}",
         flush=True,
     )
 
