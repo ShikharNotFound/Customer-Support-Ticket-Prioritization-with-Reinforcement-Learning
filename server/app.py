@@ -18,11 +18,13 @@ task_trajectories = {"easy": [], "medium": [], "hard": []}
 current_task_id = "easy"
 
 # ✅ FIX 3: task-specific env configs
+
 TASK_CONFIGS = {
-    "easy":   {"num_tickets": 5,  "sla_pressure": False},
-    "medium": {"num_tickets": 10, "sla_pressure": True},
-    "hard":   {"num_tickets": 20, "sla_pressure": True},
+    "easy":   {"num_tickets": 5,  "sla_pressure": False, "episode_steps": 30},
+    "medium": {"num_tickets": 10, "sla_pressure": True,  "episode_steps": 50},
+    "hard":   {"num_tickets": 20, "sla_pressure": True,  "episode_steps": 100},
 }
+
 
 env = TicketEnv()
 
@@ -41,6 +43,7 @@ async def reset(task_id: str = Query("easy")):
 
     # ✅ FIX 3: configure env difficulty based on task
     config = TASK_CONFIGS[task_id]
+    env.episode_steps = config["episode_steps"]
     obs = env.reset(
         num_tickets=config["num_tickets"],
         sla_pressure=config["sla_pressure"],
